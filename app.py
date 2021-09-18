@@ -11,7 +11,7 @@ st.sidebar.write("\n")
 choice = st.sidebar.selectbox("Navigation",["Display","Form"])
 pages[choice].app()
 
-im = Image.open("C:/Users/iisim/Documents/GitHub/swg/wg-pic.jpg")
-st.sidebar.image(im)
+
+st.sidebar.markdown("<img src = \"https://s3.amazonaws.com/thetech-production/images/web_photos/web/9553_IMG_9447.jpg?1614818156\" width = 280 height = 210></img>",unsafe_allow_html=True)
 st.sidebar.write("\n\n\n\n")
 st.sidebar.write("insert appropriate tagline here")
