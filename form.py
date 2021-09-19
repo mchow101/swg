@@ -70,8 +70,8 @@ def app():
                 "Description": pd.Series([event_description]),
                 "Dorm": pd.Categorical([dorm]), 
                 "Invite": pd.Categorical([status]), 
-                "Votes": [0],
-                "MaxVotes": [0]
+                "Votes": [1],
+                "MaxVotes": [1]
             })
             df = df.append(temp)
             df = df.reset_index(drop=True)
