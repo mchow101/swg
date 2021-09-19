@@ -21,7 +21,7 @@ def like(i, increment):
     if df.loc[i].Votes > df.loc[i].MaxVotes:
         df.loc[i, "MaxVotes"] = df.loc[i].Votes
         #vote number is a non zero multiple of 10 and was just increased        
-        if df.loc[i].MaxVotes % 10:
+        if (df.loc[i].Votes % 10 == 0):
             emailevents.email(df, i)
     # append to old data frame events_df
     events_doc['events_df'] = df.to_json()
