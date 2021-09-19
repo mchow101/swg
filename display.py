@@ -17,10 +17,14 @@ def like(i, increment):
     global events_doc
     if increment > 0:
         st.balloons()
-    df.loc[i, "Votes"] = df.loc[i].Votes + increment
     #vote number is a non zero multiple of 10 and was just increased
-    if df.loc[i].Votes != 0 and df.loc[i].Votes % 10 == 0 and increment > 0:
-        emailevents.email(df, i)
+    #TODO: check if maxvotes for event is not > cur votes
+        if df.loc[i].Votes > 0 and df.loc[i].Votes % 10 == 0:
+            #TODO: cookies
+            #TODO: give each event a UID
+            session[str(i)] = "up"
+            emailevents.email(df, i)
+    df.loc[i, "Votes"] = df.loc[i].Votes + increment
     # append to old data frame events_df
     events_doc['events_df'] = df.to_json()
     events_doc.save()
