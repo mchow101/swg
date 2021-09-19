@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import json
 from cloudant import Cloudant
+import emailevents
 
 events_doc_name = "events"
 db_name = 'events_db'
@@ -13,11 +14,14 @@ events_doc = None
 
 def like(i, increment):
     global df
+    global events_doc
     if increment > 0:
         st.balloons()
     df.loc[i, "Votes"] = df.loc[i].Votes + increment
+    #vote number is a non zero multiple of 10 and was just increased
+    if df.loc[i].Votes != 0 and df.loc[i].Votes % 10 == 0 and increment > 0:
+        emailevents.email(df, i)
     # append to old data frame events_df
-    global events_doc
     events_doc['events_df'] = df.to_json()
     events_doc.save()
 
