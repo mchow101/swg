@@ -1,25 +1,65 @@
 import streamlit as st
 import pandas as pd
+import os
+import json
+from cloudant import Cloudant
 
-# fill in with importing data from database
-# test for now
-df = pd.DataFrame({
-    "Title": pd.Series(["West Side Party", "Bumper Cars", "West Big Thing"]),
-    "Description": pd.Series(["East Side Party but WG", "beep beep in west garage", "Joint with Next Big Thing"]),
-    "Dorm": pd.Categorical(["East Campus", "East Campus", "Next"]), 
-    "Invite": pd.Categorical(["All MIT Students", "WG Residents Only", "WG Residents Only"]), 
-    "Votes": [0, 1, -2]
-})
-df = df.sort_values(by="Votes", ascending=False)
-df = df.reset_index(drop=True)
+events_doc_name = "events"
+db_name = 'events_db'
+client = None
+db = None
+df = None
+events_doc = None
 
 def like(i, increment):
     global df
     if increment > 0:
         st.balloons()
     df.loc[i, "Votes"] = df.loc[i].Votes + increment
+    # append to old data frame events_df
+    global events_doc
+    events_doc['events_df'] = df.to_json()
+    events_doc.save()
 
 def app():
+    global db
+    global df
+    global events_doc
+    if 'VCAP_SERVICES' in os.environ:
+        vcap = json.loads(os.getenv('VCAP_SERVICES'))
+        print('Found VCAP_SERVICES')
+        if 'cloudantNoSQLDB' in vcap:
+            creds = vcap['cloudantNoSQLDB'][0]['credentials']
+            user = creds['username']
+            password = creds['password']
+            url = 'https://' + creds['host']
+            client = Cloudant(user, password, url=url, connect=True)
+            db = client.create_database(db_name, throw_on_exists=False)
+    elif "CLOUDANT_URL" in os.environ:
+        client = Cloudant(os.environ['CLOUDANT_USERNAME'], os.environ['CLOUDANT_PASSWORD'], url=os.environ['CLOUDANT_URL'], connect=True)
+        db = client.create_database(db_name, throw_on_exists=False)
+    elif os.path.isfile('vcap-local.json'):
+        with open('vcap-local.json') as f:
+            vcap = json.load(f)
+            print('Found local VCAP_SERVICES')
+            creds = vcap['services']['cloudantNoSQLDB'][0]['credentials']
+            user = creds['username']
+            password = creds['password']
+            url = 'https://' + creds['host']
+            client = Cloudant(user, password, url=url, connect=True)
+            db = client.create_database(db_name, throw_on_exists=False)
+
+    if events_doc_name in db:
+        events_doc = db[events_doc_name]
+        df = pd.read_json(events_doc["events_df"])
+    else:
+        df = pd.DataFrame(columns=['Title', 'Description', 'Dorm', 'Invite', 'Votes'])
+        events_doc = db.create_document({
+            "_id": events_doc_name,
+            "events_df": df.to_json()
+        })
+    df = df.sort_values(by="Votes", ascending=False)
+    df = df.reset_index(drop=True)
     st.title("Display Posts")
     st.write('''---''')
     containers = []
