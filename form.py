@@ -1,4 +1,13 @@
 import streamlit as st
+import pandas as pd
+import os
+import json
+from cloudant import Cloudant
+
+events_doc_name = "events"
+db_name = 'events_db'
+client = None
+db = None
 
 def app():
     st.title("Form")
@@ -21,6 +30,45 @@ def app():
         submit_button = st.form_submit_button(label='Submit')
 
         if submit_button:
+            if 'VCAP_SERVICES' in os.environ:
+                vcap = json.loads(os.getenv('VCAP_SERVICES'))
+                print('Found VCAP_SERVICES')
+                if 'cloudantNoSQLDB' in vcap:
+                    creds = vcap['cloudantNoSQLDB'][0]['credentials']
+                    user = creds['username']
+                    password = creds['password']
+                    url = 'https://' + creds['host']
+                    client = Cloudant(user, password, url=url, connect=True)
+                    db = client.create_database(db_name, throw_on_exists=False)
+            elif "CLOUDANT_URL" in os.environ:
+                client = Cloudant(os.environ['CLOUDANT_USERNAME'], os.environ['CLOUDANT_PASSWORD'], url=os.environ['CLOUDANT_URL'], connect=True)
+                db = client.create_database(db_name, throw_on_exists=False)
+            elif os.path.isfile('vcap-local.json'):
+                with open('vcap-local.json') as f:
+                    vcap = json.load(f)
+                    print('Found local VCAP_SERVICES')
+                    creds = vcap['services']['cloudantNoSQLDB'][0]['credentials']
+                    user = creds['username']
+                    password = creds['password']
+                    url = 'https://' + creds['host']
+                    client = Cloudant(user, password, url=url, connect=True)
+                    db = client.create_database(db_name, throw_on_exists=False)
+
+            if events_doc_name in db:
+                events_df = db[events_doc_name]["events_df"]
+            else:
+                events_df = pd.DataFrame(columns=['Title', 'Description', 'Dorm', 'Invite', 'Votes'])
+                events_doc = db.create_document({
+                    "_id": events_doc_name,
+                    "events_df": events_df
+                })
+            #TODO mitali add more pandas stuff here
+            # create new data frame with new info
+            # append to old data frame events_df
+            events_doc['events_df'] = events_df
+            events_doc.save()
+            
+
             # check if all mandatory inputs are valid
             if event_title and event_description and dorm != " " and status != " ":
                 st.balloons()
