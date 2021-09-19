@@ -12,3 +12,7 @@ Submit ideas for events to help the West Garage community connect and thrive! Yo
 You can also view all event idea submissions in the display page! Upvote ideas you like and would like to see come to life or downvote those you don't like. When events get upvoted by enough people, the West Garage community will be notified by an email in hopes that the idea will get implemented.
 
 ![Display Image](/images/display.png "Display")
+
+
+## Technologies
+This webapp is hosted on IBM CloudFoundry to support the web app, and uses Cloudant for database functionality. The project was primarily created using Streamlit and Python. 
