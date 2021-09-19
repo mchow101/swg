@@ -23,9 +23,4 @@ def app():
         if submit_button:
             # check if all mandatory inputs are valid
             if event_title and event_description and dorm != " " and status != " ":
-                st.write('hello')
-                
-            # 
-
-        
-    
+                st.balloons()
