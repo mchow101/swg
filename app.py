@@ -1,7 +1,7 @@
 import streamlit as st
 import display
 import form
-from PIL import Image
+# from pillow import Image
 
 st.sidebar.title('Save West Garage')
 
