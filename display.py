@@ -18,9 +18,11 @@ def like(i, increment):
     if increment > 0:
         st.balloons()
     df.loc[i, "Votes"] = df.loc[i].Votes + increment
-    #vote number is a non zero multiple of 10 and was just increased
-    if df.loc[i].Votes != 0 and df.loc[i].Votes % 10 == 0 and increment > 0:
-        emailevents.email(df, i)
+    if df.loc[i].Votes > df.loc[i].MaxVotes:
+        df.loc[i, "MaxVotes"] = df.loc[i].Votes
+        #vote number is a non zero multiple of 10 and was just increased        
+        if df.loc[i].MaxVotes % 10:
+            emailevents.email(df, i)
     # append to old data frame events_df
     events_doc['events_df'] = df.to_json()
     events_doc.save()
@@ -57,7 +59,7 @@ def app():
         events_doc = db[events_doc_name]
         df = pd.read_json(events_doc["events_df"])
     else:
-        df = pd.DataFrame(columns=['Title', 'Description', 'Dorm', 'Invite', 'Votes'])
+        df = pd.DataFrame(columns=['Title', 'Description', 'Dorm', 'Invite', 'Votes', 'MaxVotes'])
         events_doc = db.create_document({
             "_id": events_doc_name,
             "events_df": df.to_json()

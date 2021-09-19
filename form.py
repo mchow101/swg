@@ -58,7 +58,7 @@ def app():
                 events_doc = db[events_doc_name]
                 df = pd.read_json(events_doc["events_df"])
             else:
-                df = pd.DataFrame(columns=['Title', 'Description', 'Dorm', 'Invite', 'Votes'])
+                df = pd.DataFrame(columns=['Title', 'Description', 'Dorm', 'Invite', 'Votes', 'MaxVotes'])
                 events_doc = db.create_document({
                     "_id": events_doc_name,
                     "events_df": df.to_json()
@@ -70,7 +70,8 @@ def app():
                 "Description": pd.Series([event_description]),
                 "Dorm": pd.Categorical([dorm]), 
                 "Invite": pd.Categorical([status]), 
-                "Votes": [0]
+                "Votes": [0],
+                "MaxVotes": [0]
             })
             df = df.append(temp)
             df = df.reset_index(drop=True)
